@@ -1,0 +1,4 @@
+# GitHub Profile Toolkit requires Python 3.8+
+# Core functionality relies entirely on Python Standard Library (urllib, json, argparse)
+# Optional development dependencies:
+# pytest>=7.4.0
