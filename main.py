@@ -46,6 +46,18 @@ def build_parser() -> argparse.ArgumentParser:
         help="GitHub Personal Access Token (defaults to GITHUB_TOKEN or GH_TOKEN env vars)",
     )
     parser.add_argument(
+        "--top",
+        type=int,
+        default=1,
+        help="Number of top repositories to display (default: 1)",
+    )
+    parser.add_argument(
+        "--sort",
+        choices=["stars", "forks"],
+        default="stars",
+        help="Sort criterion for repositories (stars or forks, default: stars)",
+    )
+    parser.add_argument(
         "--json",
         action="store_true",
         help="Output raw JSON data instead of formatted cards",
@@ -80,7 +92,7 @@ def main() -> int:
     fetcher = GitHubProfileFetcher(token=args.token)
 
     try:
-        summary = fetcher.get_profile_summary(username)
+        summary = fetcher.get_profile_summary(username, top_n=args.top, sort_by=args.sort)
     except UserNotFoundError as err:
         print(format_error(str(err)))
         return 1

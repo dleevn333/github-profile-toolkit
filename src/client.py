@@ -107,26 +107,28 @@ class GitHubProfileFetcher:
 
         return repos[:max_repos]
 
-    def get_profile_summary(self, username: str) -> Dict[str, Any]:
+    def get_profile_summary(self, username: str, top_n: int = 1, sort_by: str = "stars") -> Dict[str, Any]:
         """Fetch user profile and calculate repository & star statistics."""
         user_data = self.fetch_user_profile(username)
         repos_data = self.fetch_user_repositories(username)
 
         total_stars = sum(repo.get("stargazers_count", 0) for repo in repos_data)
 
-        top_repo = None
-        if repos_data:
-            sorted_repos = sorted(repos_data, key=lambda r: r.get("stargazers_count", 0), reverse=True)
-            best = sorted_repos[0]
-            top_repo = {
-                "name": best.get("name"),
-                "full_name": best.get("full_name"),
-                "stars": best.get("stargazers_count", 0),
-                "forks": best.get("forks_count", 0),
-                "language": best.get("language") or "N/A",
-                "html_url": best.get("html_url"),
-                "description": best.get("description") or "No description provided.",
-            }
+        # Sort key based on sort_by option
+        key_name = "forks_count" if sort_by == "forks" else "stargazers_count"
+        sorted_repos = sorted(repos_data, key=lambda r: r.get(key_name, 0), reverse=True)
+
+        top_list = []
+        for repo in sorted_repos[:max(1, top_n)]:
+            top_list.append({
+                "name": repo.get("name"),
+                "full_name": repo.get("full_name"),
+                "stars": repo.get("stargazers_count", 0),
+                "forks": repo.get("forks_count", 0),
+                "language": repo.get("language") or "N/A",
+                "html_url": repo.get("html_url"),
+                "description": repo.get("description") or "No description provided.",
+            })
 
         return {
             "username": user_data.get("login"),
@@ -140,5 +142,6 @@ class GitHubProfileFetcher:
             "following": user_data.get("following", 0),
             "public_repos": user_data.get("public_repos", 0),
             "total_stars": total_stars,
-            "top_repository": top_repo,
+            "top_repository": top_list[0] if top_list else None,
+            "top_repositories": top_list,
         }

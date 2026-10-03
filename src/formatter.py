@@ -88,21 +88,27 @@ def format_profile(summary: Dict[str, Any]) -> str:
     lines.append(f"  {colorize('Public Repos:', Colors.BOLD)} {colorize(f'{repos:,}', Colors.BRIGHT_GREEN)}")
     lines.append(f"  {colorize('Total Stars:', Colors.BOLD)}  {colorize(f'{stars:,} ⭐', Colors.BRIGHT_YELLOW)}")
 
-    # Top Repository
-    top_repo = summary.get("top_repository")
-    lines.append(f"\n{colorize('⭐ TOP STARRED REPOSITORY', Colors.BOLD + Colors.BRIGHT_YELLOW)}")
-    if top_repo:
-        repo_name = top_repo.get("name")
-        repo_stars = top_repo.get("stars", 0)
-        repo_forks = top_repo.get("forks", 0)
-        repo_lang = top_repo.get("language") or "N/A"
-        repo_url = top_repo.get("html_url")
-        repo_desc = top_repo.get("description") or "No description."
+    # Top Repositories
+    top_repos = summary.get("top_repositories") or ([summary.get("top_repository")] if summary.get("top_repository") else [])
+    header_title = "⭐ TOP REPOSITORIES" if len(top_repos) > 1 else "⭐ TOP STARRED REPOSITORY"
+    lines.append(f"\n{colorize(header_title, Colors.BOLD + Colors.BRIGHT_YELLOW)}")
+    if top_repos:
+        for idx, repo in enumerate(top_repos, 1):
+            repo_name = repo.get("name")
+            repo_stars = repo.get("stars", 0)
+            repo_forks = repo.get("forks", 0)
+            repo_lang = repo.get("language") or "N/A"
+            repo_url = repo.get("html_url")
+            repo_desc = repo.get("description") or "No description."
 
-        lines.append(f"  {colorize('Repository:', Colors.BOLD)}  {colorize(repo_name, Colors.BOLD + Colors.BRIGHT_CYAN)}")
-        lines.append(f"  {colorize('Stars:', Colors.BOLD)}       {colorize(f'{repo_stars:,} ⭐', Colors.BRIGHT_YELLOW)}  |  {colorize('Forks:', Colors.BOLD)} {repo_forks:,}  |  {colorize('Language:', Colors.BOLD)} {repo_lang}")
-        lines.append(f"  {colorize('URL:', Colors.BOLD)}         {colorize(repo_url, Colors.CYAN)}")
-        lines.append(f"  {colorize('Description:', Colors.BOLD)} {repo_desc}")
+            prefix = f"  [{idx}] " if len(top_repos) > 1 else "  "
+            indent = "      " if len(top_repos) > 1 else "  "
+            lines.append(f"{prefix}{colorize('Repository:', Colors.BOLD)}  {colorize(repo_name, Colors.BOLD + Colors.BRIGHT_CYAN)}")
+            lines.append(f"{indent}{colorize('Stars:', Colors.BOLD)}       {colorize(f'{repo_stars:,} ⭐', Colors.BRIGHT_YELLOW)}  |  {colorize('Forks:', Colors.BOLD)} {repo_forks:,}  |  {colorize('Language:', Colors.BOLD)} {repo_lang}")
+            lines.append(f"{indent}{colorize('URL:', Colors.BOLD)}         {colorize(repo_url, Colors.CYAN)}")
+            lines.append(f"{indent}{colorize('Description:', Colors.BOLD)} {repo_desc}")
+            if idx < len(top_repos):
+                lines.append(f"{indent}{colorize('· · ·', Colors.DIM)}")
     else:
         lines.append(f"  {colorize('No public repositories found.', Colors.DIM)}")
 
